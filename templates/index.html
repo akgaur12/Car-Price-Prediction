@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Price Prediction</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+    <div class="container">
+        <div>
+            <h1>Car Price Prediction</h1>
+            <hr>
+            <p>This Website Predict the price of car you wants to sell.</p>
+        </div>
+
+        <form method="post" accept-charset="utf-8" name="Modelform">
+            <p class="lbl">Select Company*</p>
+            <select name="company" id="company" required>
+                {% for company in companies %}
+                    <option value="{{ company }}">{{ company }}</option>
+                {% endfor %}
+            </select>
+
+            <p class="lbl">Select Model*</p>
+            <select name="model" id="model" required>
+                {% for model in car_models %}
+                    <option value="{{ model}}">{{ model }}</option>
+                {% endfor %}
+
+            </select>
+
+            <p class="lbl">Purchase Year*</p>
+            <select name="year" id="year" required>
+                {% for year in years %}
+                    <option value="{{ year }}">{{ year }}</option>
+                {% endfor %}
+                
+            </select>
+
+            <p class="lbl">Fuel Type*</p>
+            <select name="fuel_type" id="fuel_type" required>
+                {% for fuel in fuel_types %}
+                    <option value="{{ fuel }}">{{ fuel }}</option>
+                {% endfor %}
+                
+            </select>
+
+            <p class="lbl">Enter the number of Kilometers the car has travelled*</p>
+            <input type="text" name="kms" id="kms" placeholder="Enter kilometers driven">
+
+            <button onclick="send_data()">Predict Price </button>
+        </form>
+    </div>
+
+    <div>
+        <h2 id="result" class="container"><span id="prediction"></span></h2>
+    </div>
+
+    <script>
+
+    function form_handler(event) {
+        event.preventDefault(); // Don't submit the form normally
+    }
+
+    function send_data()
+    {
+        document.querySelector('form').addEventListener("submit",form_handler);
+
+        var fd=new FormData(document.querySelector('form'));
+
+        var xhr= new XMLHttpRequest({mozSystem: true});
+
+        xhr.open('POST','/predict',true);
+        document.getElementById('prediction').innerHTML="Wait! Predicting Price.....";
+        xhr.onreadystatechange = function()
+        {
+            if(xhr.readyState == XMLHttpRequest.DONE)
+            {
+                document.getElementById('prediction').innerHTML="Prediction: ₹"+xhr.responseText;
+            }
+        };
+
+        xhr.onload= function(){};
+
+        xhr.send(fd);
+    }
+    </script>
+    
+</body>
+</html>
