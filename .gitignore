@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+env/
+venv/
+.venv/
+.env
+.venv
+
+# Models and data
+*.pkl
+*.csv
+
+# Logs
+*.log
