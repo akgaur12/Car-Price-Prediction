@@ -3,88 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Car Price Prediction</title>
-    <link rel="stylesheet" href="/static/css/style.css">
+    <title>Car Price Prediction | Premium ML Estimates</title>
+    <!-- Modern Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
 
-    <div class="container">
-        <div>
-            <h1>Car Price Prediction</h1>
-            <hr>
-            <p>This Website Predict the price of car you wants to sell.</p>
+    <div class="main-wrapper">
+        <div class="container">
+            <header class="header">
+                <h1>CarPrice AI</h1>
+                <p class="subtitle">Enter car details for a precise market value estimate.</p>
+            </header>
+
+            <form id="prediction-form" onsubmit="send_data(event)">
+                <div class="form-group">
+                    <label class="lbl" for="company">Company</label>
+                    <select name="company" id="company" required>
+                        {% for company in companies %}
+                            <option value="{{ company }}">{{ company }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="lbl" for="model">Model</label>
+                    <select name="model" id="model" required>
+                        {% for model in car_models %}
+                            <option value="{{ model }}">{{ model }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="lbl" for="year">Purchase Year</label>
+                    <select name="year" id="year" required>
+                        {% for year in years %}
+                            <option value="{{ year }}">{{ year }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="lbl" for="fuel_type">Fuel Type</label>
+                    <select name="fuel_type" id="fuel_type" required>
+                        {% for fuel in fuel_types %}
+                            <option value="{{ fuel }}">{{ fuel }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="lbl" for="kms">Kilometers Driven</label>
+                    <input type="text" name="kms" id="kms" placeholder="e.g. 45000" required>
+                </div>
+
+                <button type="submit" id="predict-btn">Predict Market Price</button>
+            </form>
+
+            <div id="result-container">
+                <div id="loader" class="loading-spinner"></div>
+                <div id="prediction"></div>
+            </div>
         </div>
-
-        <form method="post" accept-charset="utf-8" name="Modelform">
-            <p class="lbl">Select Company*</p>
-            <select name="company" id="company" required>
-                {% for company in companies %}
-                    <option value="{{ company }}">{{ company }}</option>
-                {% endfor %}
-            </select>
-
-            <p class="lbl">Select Model*</p>
-            <select name="model" id="model" required>
-                {% for model in car_models %}
-                    <option value="{{ model}}">{{ model }}</option>
-                {% endfor %}
-
-            </select>
-
-            <p class="lbl">Purchase Year*</p>
-            <select name="year" id="year" required>
-                {% for year in years %}
-                    <option value="{{ year }}">{{ year }}</option>
-                {% endfor %}
-                
-            </select>
-
-            <p class="lbl">Fuel Type*</p>
-            <select name="fuel_type" id="fuel_type" required>
-                {% for fuel in fuel_types %}
-                    <option value="{{ fuel }}">{{ fuel }}</option>
-                {% endfor %}
-                
-            </select>
-
-            <p class="lbl">Enter the number of Kilometers the car has travelled*</p>
-            <input type="text" name="kms" id="kms" placeholder="Enter kilometers driven">
-
-            <button onclick="send_data()">Predict Price </button>
-        </form>
-    </div>
-
-    <div>
-        <h2 id="result" class="container"><span id="prediction"></span></h2>
     </div>
 
     <script>
+    async function send_data(event) {
+        event.preventDefault();
+        
+        const form = document.getElementById('prediction-form');
+        const btn = document.getElementById('predict-btn');
+        const predictionDiv = document.getElementById('prediction');
+        const loader = document.getElementById('loader');
+        
+        // Visual feedback
+        btn.disabled = true;
+        btn.innerText = "Analyzing Market Data...";
+        predictionDiv.innerText = "";
+        loader.style.display = "block";
 
-    function form_handler(event) {
-        event.preventDefault(); // Don't submit the form normally
-    }
+        const formData = new FormData(form);
+        
+        try {
+            const response = await fetch('/predict', {
+                method: 'POST',
+                body: formData
+            });
 
-    function send_data()
-    {
-        document.querySelector('form').addEventListener("submit",form_handler);
-
-        var fd=new FormData(document.querySelector('form'));
-
-        var xhr= new XMLHttpRequest({mozSystem: true});
-
-        xhr.open('POST','/predict',true);
-        document.getElementById('prediction').innerHTML="Wait! Predicting Price.....";
-        xhr.onreadystatechange = function()
-        {
-            if(xhr.readyState == XMLHttpRequest.DONE)
-            {
-                document.getElementById('prediction').innerHTML="Prediction: ₹"+xhr.responseText;
+            if (response.ok) {
+                const price = await response.text();
+                // Simulation delay for effect
+                setTimeout(() => {
+                    loader.style.display = "none";
+                    predictionDiv.innerText = "Estimated Value: ₹" + parseFloat(price).toLocaleString();
+                    btn.disabled = false;
+                    btn.innerText = "Predict Market Price";
+                }, 800);
+            } else {
+                throw new Error('Prediction failed');
             }
-        };
-
-        xhr.onload= function(){};
-
-        xhr.send(fd);
+        } catch (error) {
+            loader.style.display = "none";
+            predictionDiv.innerText = "Oops! Something went wrong.";
+            predictionDiv.style.color = "var(--error-color)";
+            btn.disabled = false;
+            btn.innerText = "Try Again";
+        }
     }
     </script>
     
